@@ -78,35 +78,45 @@ function draw() {
 
   // 가속도 센서가 활성화된 경우 공 그리기 및 이동
   if (isAccelActive) {
-    // 가속도 값에 따른 속도 업데이트
-    // 가속도 값을 속도 변화량으로 사용 (반전하여 자연스러운 움직임)
-    ballVx += -accelX * 0.5;
-    ballVy += accelY * 0.5;
+    // 가속도 값에 따른 속도 업데이트 (방향성 반대로 설정)
+    // 휴대폰을 기울이는 방향으로 공이 움직이도록
+    const accelScale = 0.3; // 부드러운 움직임을 위한 스케일 조정
+    ballVx += accelX * accelScale;
+    ballVy += -accelY * accelScale;
     
-    // 마찰 적용
-    ballVx *= 0.95;
-    ballVy *= 0.95;
+    // 최대 속도 제한 (부드러운 움직임)
+    const maxSpeed = 15;
+    ballVx = constrain(ballVx, -maxSpeed, maxSpeed);
+    ballVy = constrain(ballVy, -maxSpeed, maxSpeed);
+    
+    // 부드러운 마찰 적용
+    ballVx *= 0.97;
+    ballVy *= 0.97;
+    
+    // 속도가 매우 작을 때는 정지
+    if (abs(ballVx) < 0.1) ballVx = 0;
+    if (abs(ballVy) < 0.1) ballVy = 0;
     
     // 위치 업데이트
     ballX += ballVx;
     ballY += ballVy;
     
-    // 화면 경계 체크 및 반사
+    // 화면 경계 체크 및 부드러운 반사
     const radius = 50;
     if (ballX < radius || ballX > width - radius) {
-      ballVx *= -0.8;
+      ballVx *= -0.85;
       ballX = constrain(ballX, radius, width - radius);
     }
     if (ballY < radius || ballY > height - radius) {
-      ballVy *= -0.8;
+      ballVy *= -0.85;
       ballY = constrain(ballY, radius, height - radius);
     }
     
-    // 공 그리기 (가속도 기반 회전 각도 계산)
+    // 공 그리기 (가속도 기반 회전 각도 계산 - 방향 반대로)
     push();
     translate(ballX, ballY);
-    // 가속도 벡터를 기반으로 회전 각도 계산
-    let angle = atan2(accelY, accelX);
+    // 가속도 벡터를 기반으로 회전 각도 계산 (반대 방향)
+    let angle = atan2(-accelY, accelX);
     rotate(angle);
     
     fill(0);
